@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+table {
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.dark th, .dark td {
+    border-bottom-color: #374151;
+}
+
+th {
+    background-color: #f8fafc;
+    font-weight: 600;
+}
+
+.dark th {
+    background-color: #1f2937;
+}
+
+tr:hover {
+    background-color: #f8fafc;
+}
+
+.dark tr:hover {
+    background-color: #374151;
+}
+
+.font-mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+
+.chevron {
+    display: inline-block;
+    transition: transform 0.2s;
+}
+.expanded .chevron {
+    transform: rotate(90deg);
+}
