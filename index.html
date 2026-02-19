@@ -1,91 +1,101 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Needleman-Wunsch BLOSUM62 Aligner</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config = { darkMode: 'class' }</script>
+    <link rel="stylesheet" href="https://mosermd-bio.github.io/z-core/core.css">
     <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 min-h-screen">
-    <div class="max-w-5xl mx-auto p-6">
-        <div class="bg-amber-100 dark:bg-amber-950 border-l-4 border-amber-500 p-4 mb-8 rounded">
-            <p class="text-sm text-amber-700 dark:text-amber-400 mt-1">VectorBuilder-style alignment + expandable grouped variant blocks with per-substitution classification.</p>
+<body>
+    <div class="page">
+        <div class="alert mb-lg">
+            <p>VectorBuilder-style alignment + expandable grouped variant blocks with per-substitution classification.</p>
         </div>
 
-        <div class="flex justify-between items-center mb-6">
+        <div class="flex-between mb-lg">
             <div>
-                <h1 class="text-4xl font-bold">Needleman-Wunsch BLOSUM62 Aligner</h1>
-                <p class="text-lg text-gray-600 dark:text-gray-400">Global pairwise amino-acid alignment</p>
+                <h1>Needleman-Wunsch BLOSUM62 Aligner</h1>
+                <p class="subtitle">Global pairwise amino-acid alignment</p>
             </div>
-            <button id="themeToggle" class="p-3 rounded-xl bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 transition-colors">
-                <span id="themeIcon" class="text-2xl">☀️</span>
-            </button>
         </div>
 
-        <div class="prose dark:prose-invert max-w-none mb-10">
+        <div class="prose mb-xl">
             <p>Click any quick example or the demo button below to load real SARS-CoV-2 spike variant data and see the alignment instantly.</p>
         </div>
 
-        <div class="bg-white dark:bg-gray-900 shadow rounded-2xl p-8 mb-10">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="panel">
+            <div class="grid-2">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sequence 1 (Query)</label>
-                    <textarea id="seq1" rows="6" class="w-full font-mono text-sm p-4 border border-gray-300 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800" placeholder="MFVFLVLLPL..."></textarea>
+                    <label>Sequence 1 (Query)</label>
+                    <textarea id="seq1" rows="6" class="mono" placeholder="MFVFLVLLPL..."></textarea>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sequence 2 (Subject)</label>
-                    <textarea id="seq2" rows="6" class="w-full font-mono text-sm p-4 border border-gray-300 dark:border-gray-700 rounded-2xl focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800" placeholder="MFVFLVLLPL..."></textarea>
+                    <label>Sequence 2 (Subject)</label>
+                    <textarea id="seq2" rows="6" class="mono" placeholder="MFVFLVLLPL..."></textarea>
                 </div>
             </div>
 
-            <div class="mt-6 flex items-end gap-6">
+            <div class="flex-row items-end mt-lg gap-lg">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Gap Penalty</label>
-                    <div class="flex gap-3 items-center">
-                        <input type="number" id="gapPenalty" value="-4" step="1" class="w-28 font-mono text-center border border-gray-300 dark:border-gray-700 rounded-xl px-4 py-3 bg-white dark:bg-gray-800">
-                        <button id="resetConfig" class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline">Reset to –4</button>
+                    <label>Gap Penalty</label>
+                    <div class="flex-row gap-sm">
+                        <input type="number" id="gapPenalty" value="-4" step="1" class="mono text-center" style="width:7rem">
+                        <button id="resetConfig" class="btn btn-link text-sm">Reset to –4</button>
                     </div>
                 </div>
-                <div class="flex gap-3">
-                    <button id="alignBtn" class="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-medium rounded-2xl transition-colors">Align Sequences</button>
-                    <button id="clearBtn" class="px-5 py-3 bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 font-medium rounded-2xl transition-colors">Clear</button>
+                <div class="flex-row gap-sm">
+                    <button id="alignBtn" class="btn btn-success btn-lg">Align Sequences</button>
+                    <button id="clearBtn" class="btn btn-muted btn-lg">Clear</button>
                 </div>
             </div>
 
-            <div class="mt-8">
-                <p class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-3">QUICK EXAMPLES</p>
-                <div class="flex flex-wrap gap-2" id="exampleBtns"></div>
-                <button id="demoBtn" class="mt-4 px-8 py-3 bg-violet-600 hover:bg-violet-700 text-white font-medium rounded-2xl transition-colors flex items-center gap-2 whitespace-nowrap">
+            <div class="mt-lg">
+                <p class="text-xs text-dim font-medium mb-sm">QUICK EXAMPLES</p>
+                <div class="flex-row flex-wrap gap-sm" id="exampleBtns"></div>
+                <button id="demoBtn" class="btn btn-violet btn-lg mt-md">
                     📊 Load SARS-CoV-2 Spike Variant Example
                 </button>
             </div>
         </div>
 
-        <div id="results" class="hidden bg-white dark:bg-gray-900 shadow rounded-2xl p-8 mb-10">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-semibold">Alignment Result</h2>
-                <button id="saveBtn" class="text-sm font-medium bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl transition-colors">Save Comparison</button>
+        <div id="results" class="hidden panel">
+            <div class="flex-between mb-lg">
+                <h2>Alignment Result</h2>
+                <button id="saveBtn" class="btn btn-success btn-sm">Save Comparison</button>
             </div>
-            <div id="alignmentViz" class="font-mono text-base leading-none tracking-[0.5px] overflow-x-auto bg-gray-50 dark:bg-gray-800 p-6 rounded-2xl mb-6"></div>
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-                <div><div class="text-3xl font-bold text-green-600" id="score"></div><div class="text-xs text-gray-500">Score</div></div>
-                <div><div class="text-3xl font-bold text-blue-600" id="identity"></div><div class="text-xs text-gray-500">% Identity</div></div>
-                <div><div class="text-3xl font-bold text-amber-600" id="similarity"></div><div class="text-xs text-gray-500">% Similarity</div></div>
-                <div><div class="text-3xl font-bold text-purple-600" id="gaps"></div><div class="text-xs text-gray-500">Gaps</div></div>
+            <div id="alignmentViz" class="alignment-viz mb-lg"></div>
+            <div class="stat-grid">
+                <div><div class="stat-value stat-green" id="score"></div><div class="stat-label">Score</div></div>
+                <div><div class="stat-value stat-blue" id="identity"></div><div class="stat-label">% Identity</div></div>
+                <div><div class="stat-value stat-amber" id="similarity"></div><div class="stat-label">% Similarity</div></div>
+                <div><div class="stat-value stat-purple" id="gaps"></div><div class="stat-label">Gaps</div></div>
             </div>
-            <div id="warning" class="hidden mt-4 text-amber-600 dark:text-amber-400 text-sm"></div>
-            <h3 class="font-semibold mt-10 mb-4">Grouped Continuous Variant Blocks (click row to expand)</h3>
-            <table id="variantTable" class="w-full text-sm"></table>
+            <div id="warning" class="hidden mt-md text-sm" style="color:var(--warning-border)"></div>
+            <h3 class="mt-xl mb-md">Grouped Continuous Variant Blocks (click row to expand)</h3>
+            <div class="overflow-x">
+                <table id="variantTable" class="w-full text-sm"></table>
+            </div>
         </div>
 
-        <div class="bg-white dark:bg-gray-900 shadow rounded-2xl p-8">
-            <h2 class="text-2xl font-semibold mb-6 flex items-center gap-2">Saved Comparisons <span id="count" class="text-sm font-normal text-gray-500">(0)</span></h2>
-            <div id="history" class="space-y-3"></div>
+        <div class="panel">
+            <h2 class="flex-row mb-lg">Saved Comparisons <span id="count" class="text-sm text-dim font-medium">(0)</span></h2>
+            <div id="history"></div>
         </div>
 
-        <div class="text-center text-xs text-gray-400 dark:text-gray-500 mt-12">
+        <details class="references">
+            <summary>References</summary>
+            <ol>
+                <li>
+                    Needleman SB, Wunsch CD. A general method applicable to the search for similarities in the amino acid sequence of two proteins. <em>J Mol Biol.</em> 1970;48(3):443-453. doi:10.1016/0022-2836(70)90057-4
+                </li>
+                <li>
+                    Henikoff S, Henikoff JG. Amino acid substitution matrices from protein blocks. <em>Proc Natl Acad Sci USA.</em> 1992;89(22):10915-10919. doi:10.1073/pnas.89.22.10915
+                </li>
+            </ol>
+        </details>
+
+        <div class="footer">
             100% client-side • Data never transmitted
         </div>
     </div>

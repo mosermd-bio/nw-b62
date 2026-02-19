@@ -92,17 +92,6 @@ const exampleContainer = document.getElementById('exampleBtns');
 let currentResult = null;
 let history = JSON.parse(localStorage.getItem('nw62_history')) || [];
 
-// Theme
-const themeToggle = document.getElementById('themeToggle');
-const themeIcon   = document.getElementById('themeIcon');
-function setTheme(isDark) {
-    document.documentElement.classList.toggle('dark', isDark);
-    themeIcon.textContent = isDark ? '🌙' : '☀️';
-    localStorage.setItem('theme', isDark ? 'dark' : 'light');
-}
-themeToggle.addEventListener('click', () => setTheme(!document.documentElement.classList.contains('dark')));
-if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) setTheme(true);
-
 // Quick examples
 const examples = [
     { label: "Short test 1", s1: "AIHV", s2: "-V-I" },
@@ -110,7 +99,7 @@ const examples = [
 ];
 examples.forEach(ex => {
     const btn = document.createElement('button');
-    btn.className = "px-4 py-2 text-sm font-medium bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 rounded-xl transition-colors";
+    btn.className = "btn btn-muted btn-sm";
     btn.textContent = ex.label;
     btn.onclick = () => { seq1Input.value = ex.s1; seq2Input.value = ex.s2; alignAndShow(); };
     exampleContainer.appendChild(btn);
@@ -146,7 +135,7 @@ function buildMatchLine(a1, a2) {
 
 function renderWrappedAlignment(align1, align2) {
     const BLOCK = 60;
-    let html = '<div class="font-mono text-base leading-none tracking-[0.5px]">';
+    let html = '<div>';
     let pos1 = 0, pos2 = 0;
     for (let start = 0; start < align1.length; start += BLOCK) {
         const end = Math.min(start + BLOCK, align1.length);
@@ -161,13 +150,12 @@ function renderWrappedAlignment(align1, align2) {
             else matchB += ' ';
             if (c1 !== c2 && c1 !== '-' && c2 !== '-') {
                 const sc = new NeedlemanSearch().blosumScore(c1, c2);
-                const cls = sc >= 2 ? 'bg-emerald-200 dark:bg-emerald-900/60 text-emerald-800 dark:text-emerald-200' : sc >= 0 ? 'bg-amber-200 dark:bg-amber-900/60 text-amber-800 dark:text-amber-200' : 'bg-rose-200 dark:bg-rose-900/60 text-rose-800 dark:text-rose-200';
+                const cls = sc >= 2 ? 'sub-conservative' : sc >= 0 ? 'sub-neutral' : 'sub-noncons';
                 htmlB1 += `<span class="${cls}">${c1}</span>`;
                 htmlB2 += `<span class="${cls}">${c2}</span>`;
             } else if (c1 === '-' || c2 === '-') {
-                const gCls = 'bg-sky-100 dark:bg-sky-900/60 text-sky-700 dark:text-sky-300';
-                htmlB1 += (c1 === '-') ? `<span class="${gCls}">-</span>` : c1;
-                htmlB2 += (c2 === '-') ? `<span class="${gCls}">-</span>` : c2;
+                htmlB1 += (c1 === '-') ? `<span class="sub-gap">-</span>` : c1;
+                htmlB2 += (c2 === '-') ? `<span class="sub-gap">-</span>` : c2;
             } else {
                 htmlB1 += c1; htmlB2 += c2;
             }
@@ -177,16 +165,16 @@ function renderWrappedAlignment(align1, align2) {
         const start2 = pos2 + 1;
         const end2 = pos2 + (b2.match(/[^-]/g) || []).length;
         html += `
-            <div class="flex items-baseline mb-0.5">
-                <span class="w-14 text-right pr-4 text-gray-400 text-xs">${start1}</span>
-                <span class="flex-1">${htmlB1}</span>
-                <span class="w-14 text-left pl-4 text-gray-400 text-xs">${end1}</span>
+            <div class="aln-row aln-row-gap">
+                <span class="aln-pos aln-pos-left">${start1}</span>
+                <span class="aln-seq">${htmlB1}</span>
+                <span class="aln-pos aln-pos-right">${end1}</span>
             </div>
-            <div class="flex items-baseline mb-1 text-amber-500"><span class="w-14"></span><span class="flex-1">${matchB}</span><span class="w-14"></span></div>
-            <div class="flex items-baseline mb-7">
-                <span class="w-14 text-right pr-4 text-gray-400 text-xs">${start2}</span>
-                <span class="flex-1">${htmlB2}</span>
-                <span class="w-14 text-left pl-4 text-gray-400 text-xs">${end2}</span>
+            <div class="aln-row aln-row-match"><span class="aln-pos"></span><span class="aln-seq">${matchB}</span><span class="aln-pos"></span></div>
+            <div class="aln-row aln-row-block">
+                <span class="aln-pos aln-pos-left">${start2}</span>
+                <span class="aln-seq">${htmlB2}</span>
+                <span class="aln-pos aln-pos-right">${end2}</span>
             </div>
         `;
         pos1 = end1; pos2 = end2;
@@ -213,17 +201,17 @@ function getVariantBlocks(aln1, aln2) {
             if (block2[k] === '-') gaps2++;
             if (block1[k] !== '-' && block2[k] !== '-' && block1[k] !== block2[k]) hasSub++;
         }
-        let type, cls;
+        let type;
         if (hasSub === 0) {
-            if (gaps1 > 0 && gaps2 === 0) { type = 'Deletion'; cls = 'bg-sky-100 dark:bg-sky-900/50 text-sky-800'; }
-            else if (gaps2 > 0 && gaps1 === 0) { type = 'Insertion'; cls = 'bg-sky-100 dark:bg-sky-900/50 text-sky-800'; }
-            else { type = 'Indel'; cls = 'bg-sky-100 dark:bg-sky-900/50 text-sky-800'; }
+            if (gaps1 > 0 && gaps2 === 0) type = 'Deletion';
+            else if (gaps2 > 0 && gaps1 === 0) type = 'Insertion';
+            else type = 'Indel';
         } else if (gaps1 === 0 && gaps2 === 0) {
-            type = 'Substitution Block'; cls = 'bg-amber-100 dark:bg-amber-900/50 text-amber-800';
+            type = 'Substitution Block';
         } else {
-            type = 'Complex (Indel + Sub)'; cls = 'bg-purple-100 dark:bg-purple-900/50 text-purple-800';
+            type = 'Complex (Indel + Sub)';
         }
-        blocks.push({ posStart, posEnd, block1, block2, len, type, cls, startIdx: start, hasSub });
+        blocks.push({ posStart, posEnd, block1, block2, len, type, startIdx: start, hasSub });
     }
     return blocks;
 }
@@ -252,18 +240,18 @@ function alignAndShow() {
     warningEl.classList.toggle('hidden', lenRatio <= 0.6);
 
     const blocks = getVariantBlocks(currentResult.alignment1, currentResult.alignment2);
-    let html = `<thead><tr class="bg-gray-100 dark:bg-gray-800"><th class="w-8"></th><th>Positions</th><th>Seq1</th><th>Seq2</th><th>Len</th><th>Type</th></tr></thead><tbody>`;
+    let html = `<thead><tr><th class="text-center" style="width:2rem"></th><th>Positions</th><th>Seq1</th><th>Seq2</th><th>Len</th><th>Type</th></tr></thead><tbody>`;
     blocks.forEach((b, idx) => {
-        html += `<tr class="variant-row cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 border-b border-gray-100 dark:border-gray-700" data-index="${idx}">
-            <td class="text-center"><span class="chevron inline-block w-4">›</span></td>
-            <td class="font-mono">${b.posStart}–${b.posEnd}</td>
-            <td class="font-mono">${b.block1}</td>
-            <td class="font-mono">${b.block2}</td>
-            <td class="font-mono text-center">${b.len}</td>
+        html += `<tr class="variant-row" data-index="${idx}">
+            <td class="text-center"><span class="chevron">›</span></td>
+            <td class="mono">${b.posStart}–${b.posEnd}</td>
+            <td class="mono">${b.block1}</td>
+            <td class="mono">${b.block2}</td>
+            <td class="mono text-center">${b.len}</td>
             <td>${b.type}</td>
         </tr>`;
     });
-    if (blocks.length === 0) html += `<tr><td colspan="6" class="text-center py-8 text-gray-500">Perfect match — no variants</td></tr>`;
+    if (blocks.length === 0) html += `<tr><td colspan="6" class="text-center text-dim" style="padding:2rem 0">Perfect match — no variants</td></tr>`;
     html += `</tbody>`;
     variantTable.innerHTML = html;
 
@@ -277,21 +265,21 @@ function alignAndShow() {
                 row.classList.remove('expanded');
                 return;
             }
-            let detailHTML = `<tr class="details-row bg-gray-50 dark:bg-gray-900"><td colspan="6" class="p-0"><div class="p-4">`;
+            let detailHTML = `<tr class="details-row"><td colspan="6"><div class="detail-inner">`;
             if (block.hasSub > 0) {
-                detailHTML += `<table class="w-full text-xs"><thead><tr class="text-gray-500"><th class="text-left">Pos</th><th class="text-left">From → To</th><th class="text-left">Score</th><th class="text-left">Classification</th></tr></thead><tbody>`;
+                detailHTML += `<table class="w-full text-xs"><thead><tr class="text-dim"><th class="text-left">Pos</th><th class="text-left">From → To</th><th class="text-left">Score</th><th class="text-left">Classification</th></tr></thead><tbody>`;
                 for (let k = block.startIdx; k < block.startIdx + block.len; k++) {
                     const a = currentResult.alignment1[k];
                     const b = currentResult.alignment2[k];
                     if (a !== b && a !== '-' && b !== '-') {
                         const sc = new NeedlemanSearch().blosumScore(a, b);
-                        const cls = sc >= 2 ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300' : sc >= 0 ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300' : 'bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300';
-                        detailHTML += `<tr class="${cls}"><td class="font-mono">${k+1}</td><td class="font-mono">${a} → ${b}</td><td class="font-mono">${sc}</td><td>${new NeedlemanSearch().classify(sc)}</td></tr>`;
+                        const cls = sc >= 2 ? 'sub-conservative' : sc >= 0 ? 'sub-neutral' : 'sub-noncons';
+                        detailHTML += `<tr class="${cls}"><td class="mono">${k+1}</td><td class="mono">${a} → ${b}</td><td class="mono">${sc}</td><td>${new NeedlemanSearch().classify(sc)}</td></tr>`;
                     }
                 }
                 detailHTML += `</tbody></table>`;
             } else {
-                detailHTML += `<p class="text-sm text-gray-600 dark:text-gray-400">Pure indel block — no amino-acid substitutions to classify.</p>`;
+                detailHTML += `<p class="text-sm text-dim">Pure indel block — no amino-acid substitutions to classify.</p>`;
             }
             detailHTML += `</div></td></tr>`;
             row.insertAdjacentHTML('afterend', detailHTML);
@@ -320,13 +308,13 @@ function renderHistory() {
     historyDiv.innerHTML = '';
     countEl.textContent = `(${history.length})`;
     if (history.length === 0) {
-        historyDiv.innerHTML = '<p class="text-gray-500 text-center py-8">No saved comparisons yet.</p>';
+        historyDiv.innerHTML = '<p class="text-dim text-center" style="padding:2rem 0">No saved comparisons yet.</p>';
         return;
     }
     history.forEach((item, idx) => {
         const div = document.createElement('div');
-        div.className = "flex justify-between items-center bg-gray-50 dark:bg-gray-800 p-4 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700";
-        div.innerHTML = `<div class="font-mono text-sm">${item.seq1.substring(0,20)}${item.seq1.length>20?'…':''} vs ${item.seq2.substring(0,20)}${item.seq2.length>20?'…':''}</div><div class="text-right"><div class="font-bold text-green-600">${item.score}</div><div class="text-xs text-gray-500">${item.identity}% id</div></div>`;
+        div.className = "history-item";
+        div.innerHTML = `<div class="mono text-sm">${item.seq1.substring(0,20)}${item.seq1.length>20?'…':''} vs ${item.seq2.substring(0,20)}${item.seq2.length>20?'…':''}</div><div class="text-right"><div class="font-bold stat-green">${item.score}</div><div class="text-xs text-dim">${item.identity}% id</div></div>`;
         div.onclick = () => { seq1Input.value = item.seq1; seq2Input.value = item.seq2; gapInput.value = item.gapPenalty; alignAndShow(); };
         historyDiv.appendChild(div);
     });
